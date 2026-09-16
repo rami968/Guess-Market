@@ -3,13 +3,18 @@ bin/
 out/
 *.class
 *.zip
+*.rar
 *.dat
 temp_*
 
+# Submission folders
+*_EX1/
+*_EX2/
+Rami_Zargian_*
+
 # IDE files
-.idea/workspace.xml
-.idea/shelf/
-.idea/tasks.xml
+.idea/
+*.iml
 
 # Root temporary JARs
 Engine.jar
