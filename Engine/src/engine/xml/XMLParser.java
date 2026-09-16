@@ -3,16 +3,16 @@ package engine.xml;
 import engine.exception.XmlFileNotFoundException;
 import engine.exception.XmlValidationException;
 import engine.model.*;
-import org.w3c.dom.*;
+import engine.xml.generated.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 import java.io.File;
 import java.util.*;
 
 /**
- * Parses XML configuration files for Guess Market (XML v1 and v2 formats).
- * Performs thorough validation of business rules and structure.
+ * Parses XML configuration files for Guess Market using JAXB Unmarshaller.
+ * Performs thorough validation of business rules and schema structure.
  */
 public class XMLParser {
 
@@ -26,58 +26,41 @@ public class XMLParser {
             throw new XmlValidationException("File must have a .xml extension: " + xmlFilePath);
         }
 
-        Document doc;
+        GuessMarket guessMarket;
         try {
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            dbFactory.setIgnoringComments(true);
-            dbFactory.setIgnoringElementContentWhitespace(true);
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            doc = dBuilder.parse(xmlFile);
-            doc.getDocumentElement().normalize();
+            JAXBContext jaxbContext = JAXBContext.newInstance(GuessMarket.class);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            guessMarket = (GuessMarket) unmarshaller.unmarshal(xmlFile);
         } catch (Exception e) {
-            throw new XmlValidationException("Failed to parse XML structure: " + e.getMessage());
+            throw new XmlValidationException("Failed to parse XML using JAXB: " + e.getMessage());
         }
 
-        Element root = doc.getDocumentElement();
-        if (!"GuessMarket".equalsIgnoreCase(root.getTagName()) && !"Guess-Market".equalsIgnoreCase(root.getTagName())) {
-            throw new XmlValidationException("Invalid root element in XML. Expected <GuessMarket> or <Guess-Market>.");
+        if (guessMarket == null) {
+            throw new XmlValidationException("XML file is empty or invalid.");
         }
 
-        // 1. Parse Events (<GM-events>)
-        NodeList eventsWrapperList = root.getElementsByTagName("GM-events");
-        if (eventsWrapperList.getLength() == 0) {
-            throw new XmlValidationException("XML file missing <GM-events> element.");
+        if (guessMarket.getGMEvents() == null || guessMarket.getGMEvents().getGMEvent() == null || guessMarket.getGMEvents().getGMEvent().isEmpty()) {
+            throw new XmlValidationException("XML file contains no events (<GM-events> missing or empty).");
         }
 
-        Element eventsWrapper = (Element) eventsWrapperList.item(0);
-        NodeList eventNodes = eventsWrapper.getElementsByTagName("GM-event");
-        if (eventNodes.getLength() == 0) {
-            throw new XmlValidationException("XML file contains no events (<GM-event> elements missing).");
-        }
-
-        List<GMEvent> eventsList = new ArrayList<>();
+        List<engine.model.GMEvent> eventsList = new ArrayList<>();
         Set<Integer> seenEventIds = new HashSet<>();
-        Map<Integer, GMEvent> eventIdMap = new HashMap<>();
+        Map<Integer, engine.model.GMEvent> eventIdMap = new HashMap<>();
 
-        for (int i = 0; i < eventNodes.getLength(); i++) {
-            Node node = eventNodes.item(i);
-            if (node.getNodeType() != Node.ELEMENT_NODE) continue;
-            Element eventElem = (Element) node;
+        // 1. Parse JAXB events
+        List<engine.xml.generated.GMEvent> jaxbEvents = guessMarket.getGMEvents().getGMEvent();
+        for (int i = 0; i < jaxbEvents.size(); i++) {
+            engine.xml.generated.GMEvent jaxbEvent = jaxbEvents.get(i);
 
-            // Event Name attribute
-            String name = eventElem.getAttribute("name");
+            String name = jaxbEvent.getName();
             if (name == null || name.trim().isEmpty()) {
                 throw new XmlValidationException("Event at position " + (i + 1) + " missing 'name' attribute.");
             }
             name = name.trim();
 
-            // Event ID
-            int id;
-            try {
-                String idStr = getElementText(eventElem, "id");
-                id = Integer.parseInt(idStr);
-            } catch (Exception e) {
-                throw new XmlValidationException("Event '" + name + "' has an invalid or missing <id> element.");
+            int id = jaxbEvent.getId();
+            if (id <= 0) {
+                throw new XmlValidationException("Event '" + name + "' has an invalid <id> element: " + id);
             }
 
             if (seenEventIds.contains(id)) {
@@ -85,35 +68,25 @@ public class XMLParser {
             }
             seenEventIds.add(id);
 
-            // Description
-            String description = getElementText(eventElem, "description");
-            if (description.isEmpty()) {
+            String description = jaxbEvent.getDescription();
+            if (description == null || description.trim().isEmpty()) {
                 throw new XmlValidationException("Event ID " + id + " (" + name + ") has an empty <description>.");
             }
 
             // Commission
-            Element commElem = getChildElement(eventElem, "commission");
-            if (commElem == null) {
-                commElem = getChildElement(eventElem, "comision"); // Fallback for schema variant
-            }
-            if (commElem == null) {
+            Commission jaxbComm = jaxbEvent.getCommission();
+            if (jaxbComm == null) {
                 throw new XmlValidationException("Event ID " + id + " missing <commission> element.");
             }
 
-            int commission;
-            try {
-                commission = Integer.parseInt(commElem.getTextContent().trim());
-            } catch (Exception e) {
-                throw new XmlValidationException("Event ID " + id + " has invalid commission percentage value.");
-            }
-
+            int commission = jaxbComm.getValue();
             if (commission < 0 || commission > 90) {
                 throw new XmlValidationException("Commission percentage for Event ID " + id + " must be between 0 and 90. Found: " + commission);
             }
 
-            String commTypeStr = commElem.getAttribute("type");
+            String commTypeStr = jaxbComm.getType();
             if (commTypeStr == null || commTypeStr.trim().isEmpty()) {
-                commTypeStr = "on-purchase"; // default
+                commTypeStr = "on-purchase";
             }
             CommissionType commissionType;
             if ("on-purchase".equalsIgnoreCase(commTypeStr.trim())) {
@@ -125,76 +98,45 @@ public class XMLParser {
             }
 
             // Options
-            Element optionsElem = getChildElement(eventElem, "GM-options");
-            if (optionsElem == null) {
-                throw new XmlValidationException("Event ID " + id + " missing <GM-options> element.");
-            }
-            NodeList optionNodes = optionsElem.getElementsByTagName("GM-option");
-            if (optionNodes.getLength() != 2) {
-                throw new XmlValidationException("Event ID " + id + " must have exactly 2 options. Found: " + optionNodes.getLength());
+            GMOptions jaxbOptions = jaxbEvent.getGMOptions();
+            if (jaxbOptions == null || jaxbOptions.getGMOption() == null || jaxbOptions.getGMOption().size() != 2) {
+                throw new XmlValidationException("Event ID " + id + " must have exactly 2 options inside <GM-options>.");
             }
 
-            String option1 = optionNodes.item(0).getTextContent().trim();
-            String option2 = optionNodes.item(1).getTextContent().trim();
+            String option1 = jaxbOptions.getGMOption().get(0).trim();
+            String option2 = jaxbOptions.getGMOption().get(1).trim();
             if (option1.isEmpty() || option2.isEmpty()) {
                 throw new XmlValidationException("Event ID " + id + " option names cannot be empty.");
             }
 
-            // Trading Method (LMSR or Order Book)
-            Element methodElem = getChildElement(eventElem, "GM-method");
-            if (methodElem == null) {
+            // Method (LMSR or Order Book)
+            GMMethod jaxbMethod = jaxbEvent.getGMMethod();
+            if (jaxbMethod == null) {
                 throw new XmlValidationException("Event ID " + id + " missing <GM-method> element.");
             }
 
-            GMEvent eventDomain;
+            engine.model.GMEvent eventDomain;
 
-            Element obElem = getChildElement(methodElem, "GM-order-book");
-            Element lmsrElem = getChildElement(methodElem, "GM-LMSR");
-
-            if (obElem != null) {
-                // Order Book event
-                boolean allowMint = Boolean.parseBoolean(obElem.getAttribute("allow-mint"));
-                
-                double initialInvestment = 0.0;
-                String initialStr = obElem.getAttribute("initial");
-                if (initialStr != null && !initialStr.trim().isEmpty()) {
-                    try {
-                        initialInvestment = Double.parseDouble(initialStr.trim());
-                    } catch (Exception e) {
-                        throw new XmlValidationException("Event ID " + id + " has invalid Order Book initial investment value.");
-                    }
-                }
-
-                double d = 1.0;
-                String dStr = obElem.getAttribute("d");
-                if (dStr != null && !dStr.trim().isEmpty()) {
-                    try {
-                        d = Double.parseDouble(dStr.trim());
-                    } catch (Exception e) {
-                        throw new XmlValidationException("Event ID " + id + " has invalid Order Book denominator d.");
-                    }
-                }
+            if (jaxbMethod.getGMOrderBook() != null) {
+                GMOrderBook jaxbOB = jaxbMethod.getGMOrderBook();
+                boolean allowMint = "true".equalsIgnoreCase(jaxbOB.getAllowMint());
+                double initialInvestment = jaxbOB.getInitial();
+                double d = jaxbOB.getD();
                 if (d <= 0) {
                     throw new XmlValidationException("Event ID " + id + " denominator 'd' must be greater than 0.");
                 }
 
-                eventDomain = new GMEvent(id, name, description, commission, commissionType, option1, option2,
+                eventDomain = new engine.model.GMEvent(id, name, description, commission, commissionType, option1, option2,
                         EventType.ORDER_BOOK, 100, allowMint, initialInvestment, d);
 
-            } else if (lmsrElem != null) {
-                // LMSR event
-                int b;
-                try {
-                    String bStr = getElementText(lmsrElem, "b");
-                    b = Integer.parseInt(bStr);
-                } catch (Exception e) {
-                    throw new XmlValidationException("Event ID " + id + " has invalid or missing LMSR liquidity parameter 'b'.");
-                }
+            } else if (jaxbMethod.getGMLMSR() != null) {
+                GMLMSR jaxbLMSR = jaxbMethod.getGMLMSR();
+                int b = jaxbLMSR.getB();
                 if (b <= 0) {
                     throw new XmlValidationException("Liquidity parameter 'b' for Event ID " + id + " must be positive (> 0). Found: " + b);
                 }
 
-                eventDomain = new GMEvent(id, name, description, commission, commissionType, option1, option2, b);
+                eventDomain = new engine.model.GMEvent(id, name, description, commission, commissionType, option1, option2, b);
             } else {
                 throw new XmlValidationException("Event ID " + id + " missing trading method (<GM-LMSR> or <GM-order-book>).");
             }
@@ -203,21 +145,17 @@ public class XMLParser {
             eventIdMap.put(id, eventDomain);
         }
 
-        // 2. Parse Users (<GM-users>)
+        // 2. Parse JAXB Users
         Map<String, User> usersMap = new HashMap<>();
         Map<Integer, String> eventToMMMap = new HashMap<>();
 
-        NodeList usersWrapperList = root.getElementsByTagName("GM-users");
-        if (usersWrapperList.getLength() > 0) {
-            Element usersWrapper = (Element) usersWrapperList.item(0);
-            NodeList userNodes = usersWrapper.getElementsByTagName("GM-user");
+        if (guessMarket.getGMUsers() != null && guessMarket.getGMUsers().getGMUser() != null) {
+            List<GMUser> jaxbUsers = guessMarket.getGMUsers().getGMUser();
 
-            for (int i = 0; i < userNodes.getLength(); i++) {
-                Node node = userNodes.item(i);
-                if (node.getNodeType() != Node.ELEMENT_NODE) continue;
-                Element userElem = (Element) node;
+            for (int i = 0; i < jaxbUsers.size(); i++) {
+                GMUser jaxbUser = jaxbUsers.get(i);
 
-                String userName = userElem.getAttribute("name");
+                String userName = jaxbUser.getName();
                 if (userName == null || userName.trim().isEmpty()) {
                     throw new XmlValidationException("User at position " + (i + 1) + " missing 'name' attribute.");
                 }
@@ -227,33 +165,18 @@ public class XMLParser {
                     throw new XmlValidationException("Duplicate user name found in XML: '" + userName + "'. User names must be unique.");
                 }
 
-                double initialCash;
-                try {
-                    String cashStr = getElementText(userElem, "initial-cash");
-                    initialCash = Double.parseDouble(cashStr);
-                } catch (Exception e) {
-                    throw new XmlValidationException("User '" + userName + "' has invalid or missing <initial-cash>.");
-                }
-
+                double initialCash = jaxbUser.getInitialCash();
                 if (initialCash <= 0) {
                     throw new XmlValidationException("User '" + userName + "' initial balance must be greater than 0. Found: " + initialCash);
                 }
 
                 User userObj = new User(userName, initialCash);
 
-                // Parse Market Maker assigned events
-                Element mmElem = getChildElement(userElem, "GM-market-maker");
-                if (mmElem != null) {
-                    NodeList mmEventNodes = mmElem.getElementsByTagName("event");
-                    for (int j = 0; j < mmEventNodes.getLength(); j++) {
-                        Element eventRef = (Element) mmEventNodes.item(j);
-                        String eventIdStr = eventRef.getAttribute("id");
-                        int eventId;
-                        try {
-                            eventId = Integer.parseInt(eventIdStr);
-                        } catch (Exception e) {
-                            throw new XmlValidationException("User '" + userName + "' has invalid Market Maker event ID reference.");
-                        }
+                // Market Maker assignments
+                GMMarketMaker jaxbMM = jaxbUser.getGMMarketMaker();
+                if (jaxbMM != null && jaxbMM.getEvent() != null) {
+                    for (Event eventRef : jaxbMM.getEvent()) {
+                        int eventId = eventRef.getId();
 
                         if (!eventIdMap.containsKey(eventId)) {
                             throw new XmlValidationException("User '" + userName + "' is assigned as MM for non-existent Event ID: " + eventId);
@@ -275,7 +198,7 @@ public class XMLParser {
 
         // Validate that EVERY event has an assigned Market Maker if users were provided
         if (!usersMap.isEmpty()) {
-            for (GMEvent ev : eventsList) {
+            for (engine.model.GMEvent ev : eventsList) {
                 if (ev.getMarketMakerName().isEmpty()) {
                     throw new XmlValidationException("Event ID " + ev.getId() + " (" + ev.getName() + ") has no Market Maker assigned from the defined users.");
                 }
@@ -283,18 +206,5 @@ public class XMLParser {
         }
 
         return new XMLDataResult(eventsList, usersMap);
-    }
-
-    private static String getElementText(Element parent, String tagName) {
-        Element elem = getChildElement(parent, tagName);
-        return elem != null ? elem.getTextContent().trim() : "";
-    }
-
-    private static Element getChildElement(Element parent, String tagName) {
-        NodeList list = parent.getElementsByTagName(tagName);
-        if (list.getLength() > 0) {
-            return (Element) list.item(0);
-        }
-        return null;
     }
 }
