@@ -74,13 +74,28 @@
                     <!-- Option 1 Order Book -->
                     <VBox styleClass="card-panel" HBox.hgrow="ALWAYS" spacing="5.0">
                         <Label fx:id="opt1NameLabel" text="Option 1" styleClass="section-title"/>
-                        <HBox spacing="10.0">
-                            <Label text="LAST:" styleClass="stat-label"/><Label fx:id="opt1LastLabel" text="0.00" styleClass="stat-value"/>
-                            <Label text="BID:" styleClass="stat-label"/><Label fx:id="opt1BidLabel" text="0.00" styleClass="stat-value"/>
-                            <Label text="ASK:" styleClass="stat-label"/><Label fx:id="opt1AskLabel" text="0.00" styleClass="stat-value"/>
-                            <Label text="MID:" styleClass="stat-label"/><Label fx:id="opt1MidLabel" text="0.00" styleClass="stat-value"/>
-                            <Label text="SPREAD:" styleClass="stat-label"/><Label fx:id="opt1SpreadLabel" text="0.00" styleClass="stat-value"/>
-                        </HBox>
+                        <GridPane hgap="12.0" vgap="6.0">
+                            <HBox spacing="4.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                <Label text="LAST:" styleClass="stat-label"/>
+                                <Label fx:id="opt1LastLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                            <HBox spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                <Label text="BID:" styleClass="stat-label"/>
+                                <Label fx:id="opt1BidLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                            <HBox spacing="4.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                                <Label text="ASK:" styleClass="stat-label"/>
+                                <Label fx:id="opt1AskLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                            <HBox spacing="4.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                <Label text="MID:" styleClass="stat-label"/>
+                                <Label fx:id="opt1MidLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                            <HBox spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                <Label text="SPREAD:" styleClass="stat-label"/>
+                                <Label fx:id="opt1SpreadLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                        </GridPane>
                         <Label text="Buy Orders (BIDs)" styleClass="stat-label"/>
                         <TableView fx:id="opt1BuyTable" prefHeight="130.0"/>
                         <Label text="Sell Orders (ASKs)" styleClass="stat-label"/>
@@ -90,13 +105,28 @@
                     <!-- Option 2 Order Book -->
                     <VBox styleClass="card-panel" HBox.hgrow="ALWAYS" spacing="5.0">
                         <Label fx:id="opt2NameLabel" text="Option 2" styleClass="section-title"/>
-                        <HBox spacing="10.0">
-                            <Label text="LAST:" styleClass="stat-label"/><Label fx:id="opt2LastLabel" text="0.00" styleClass="stat-value"/>
-                            <Label text="BID:" styleClass="stat-label"/><Label fx:id="opt2BidLabel" text="0.00" styleClass="stat-value"/>
-                            <Label text="ASK:" styleClass="stat-label"/><Label fx:id="opt2AskLabel" text="0.00" styleClass="stat-value"/>
-                            <Label text="MID:" styleClass="stat-label"/><Label fx:id="opt2MidLabel" text="0.00" styleClass="stat-value"/>
-                            <Label text="SPREAD:" styleClass="stat-label"/><Label fx:id="opt2SpreadLabel" text="0.00" styleClass="stat-value"/>
-                        </HBox>
+                        <GridPane hgap="12.0" vgap="6.0">
+                            <HBox spacing="4.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                <Label text="LAST:" styleClass="stat-label"/>
+                                <Label fx:id="opt2LastLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                            <HBox spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                <Label text="BID:" styleClass="stat-label"/>
+                                <Label fx:id="opt2BidLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                            <HBox spacing="4.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                                <Label text="ASK:" styleClass="stat-label"/>
+                                <Label fx:id="opt2AskLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                            <HBox spacing="4.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                <Label text="MID:" styleClass="stat-label"/>
+                                <Label fx:id="opt2MidLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                            <HBox spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                <Label text="SPREAD:" styleClass="stat-label"/>
+                                <Label fx:id="opt2SpreadLabel" text="0.00" styleClass="stat-value"/>
+                            </HBox>
+                        </GridPane>
                         <Label text="Buy Orders (BIDs)" styleClass="stat-label"/>
                         <TableView fx:id="opt2BuyTable" prefHeight="130.0"/>
                         <Label text="Sell Orders (ASKs)" styleClass="stat-label"/>
