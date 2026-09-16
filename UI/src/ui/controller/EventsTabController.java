@@ -96,6 +96,9 @@ public class EventsTabController {
         setupEventsTable();
         setupOrderBookTables();
         setupFormControls();
+        
+        if (orderBookContainer != null) orderBookContainer.setVisible(false);
+        if (lmsrContainer != null) lmsrContainer.setVisible(false);
     }
 
     private void setupFilters() {
