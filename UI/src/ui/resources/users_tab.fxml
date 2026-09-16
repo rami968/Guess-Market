@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<SplitPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="ui.controller.UsersTabController"
+           dividerPositions="0.3">
+
+    <!-- Left Panel: Users List Table -->
+    <VBox spacing="10.0">
+        <padding>
+            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+        </padding>
+        <Label text="System Users" styleClass="section-title"/>
+        <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colUserName" text="User Name" prefWidth="120.0"/>
+                <TableColumn fx:id="colUserBalance" text="Balance ($)" prefWidth="90.0"/>
+                <TableColumn fx:id="colUserStatus" text="Status" prefWidth="70.0"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- Right Panel: Single User Details -->
+    <ScrollPane fitToWidth="true">
+        <VBox spacing="15.0">
+            <padding>
+                <Insets top="15.0" right="15.0" bottom="15.0" left="15.0"/>
+            </padding>
+
+            <!-- User Balance & Header Card -->
+            <VBox styleClass="card-panel" spacing="8.0">
+                <HBox alignment="CENTER_LEFT" spacing="15.0">
+                    <Label fx:id="selectedUserNameLabel" text="Select a User" styleClass="section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <VBox alignment="CENTER_RIGHT">
+                        <Label text="Account Balance" styleClass="stat-label"/>
+                        <Label fx:id="userBalanceLabel" text="$0.00" styleClass="app-title"/>
+                    </VBox>
+                </HBox>
+                <Label fx:id="userStatusLabel" text="Status: -" styleClass="stat-value"/>
+            </VBox>
+
+            <!-- Market Maker Owned Events -->
+            <VBox styleClass="card-panel" spacing="5.0">
+                <Label text="Market Maker Owned Events" styleClass="section-title"/>
+                <ListView fx:id="mmEventsListView" prefHeight="90.0"/>
+            </VBox>
+
+            <!-- Participations Table -->
+            <VBox styleClass="card-panel" spacing="5.0">
+                <Label text="Events Participation &amp; Holdings" styleClass="section-title"/>
+                <TableView fx:id="participationsTable" prefHeight="180.0">
+                    <columns>
+                        <TableColumn fx:id="colPartEventId" text="Event ID" prefWidth="70.0"/>
+                        <TableColumn fx:id="colPartEventName" text="Event Name" prefWidth="150.0"/>
+                        <TableColumn fx:id="colPartRole" text="Role" prefWidth="100.0"/>
+                        <TableColumn fx:id="colPartHoldings" text="Option Holdings" prefWidth="250.0"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- Transaction History Table -->
+            <VBox styleClass="card-panel" spacing="5.0">
+                <Label text="Account Transaction History" styleClass="section-title"/>
+                <TableView fx:id="transactionsTable" prefHeight="200.0">
+                    <columns>
+                        <TableColumn fx:id="colTxDesc" text="Description" prefWidth="300.0"/>
+                        <TableColumn fx:id="colTxAmount" text="Amount ($)" prefWidth="120.0"/>
+                        <TableColumn fx:id="colTxBalanceAfter" text="Balance After ($)" prefWidth="130.0"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+    </ScrollPane>
+</SplitPane>

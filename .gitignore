@@ -1,0 +1,16 @@
+# Compiled binaries
+bin/
+out/
+*.class
+*.zip
+*.dat
+temp_*
+
+# IDE files
+.idea/workspace.xml
+.idea/shelf/
+.idea/tasks.xml
+
+# Root temporary JARs
+Engine.jar
+UI.jar

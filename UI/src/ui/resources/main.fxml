@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ui.controller.MainController"
+            stylesheets="@style.css"
+            prefWidth="1100.0" prefHeight="750.0">
+
+    <!-- Top Bar Header -->
+    <top>
+        <VBox spacing="5.0">
+            <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="15.0">
+                <Button fx:id="loadFileButton" text="Load File" onAction="#handleLoadFile" styleClass="btn-primary"/>
+                <Label fx:id="filePathLabel" text="No file loaded" styleClass="file-path-label" HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308"/>
+                <Label text="Guess Market" styleClass="app-title"/>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <padding>
+                    <Insets left="15.0" right="15.0" bottom="5.0"/>
+                </padding>
+                <ProgressBar fx:id="progressBar" prefWidth="300.0" visible="false"/>
+                <Label fx:id="statusLabel" text="Ready" styleClass="stat-label"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Main Content TabPane -->
+    <center>
+        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab fx:id="eventsTab" text="Events">
+                    <content>
+                        <fx:include fx:id="eventsTabView" source="events_tab.fxml"/>
+                    </content>
+                </Tab>
+                <Tab fx:id="usersTab" text="Users">
+                    <content>
+                        <fx:include fx:id="usersTabView" source="users_tab.fxml"/>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+</BorderPane>
