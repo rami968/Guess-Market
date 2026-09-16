@@ -37,7 +37,7 @@
                     <Region HBox.hgrow="ALWAYS"/>
                     <VBox alignment="CENTER_RIGHT">
                         <Label text="Account Balance" styleClass="stat-label"/>
-                        <Label fx:id="userBalanceLabel" text="$0.00" styleClass="app-title"/>
+                        <Label fx:id="userBalanceLabel" text="\$0.00" styleClass="app-title"/>
                     </VBox>
                 </HBox>
                 <Label fx:id="userStatusLabel" text="Status: -" styleClass="stat-value"/>
