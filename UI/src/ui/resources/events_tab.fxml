@@ -140,7 +140,7 @@
                     <HBox spacing="12.0" alignment="CENTER_LEFT">
                         <VBox spacing="2.0"><Label text="User:" styleClass="stat-label"/><ComboBox fx:id="userSelectorCombo" prefWidth="120.0"/></VBox>
                         <VBox spacing="2.0"><Label text="Option:" styleClass="stat-label"/><ComboBox fx:id="optionSelectorCombo" prefWidth="110.0"/></VBox>
-                        <VBox spacing="2.0"><Label text="Action:" styleClass="stat-label"/><ComboBox fx:id="actionTypeCombo" prefWidth="90.0"/></VBox>
+                        <VBox spacing="2.0"><Label text="Action:" styleClass="stat-label"/><ComboBox fx:id="actionTypeCombo" prefWidth="110.0"/></VBox>
                         <VBox spacing="2.0"><Label text="Shares:" styleClass="stat-label"/><Spinner fx:id="countSpinner" prefWidth="90.0"/></VBox>
                         <VBox spacing="2.0"><Label text="Price/Share ($):" styleClass="stat-label"/><TextField fx:id="priceField" prefWidth="100.0" promptText="0.50"/></VBox>
                         <Button fx:id="submitOrderButton" text="Submit Order" onAction="#handleSubmitOrder" styleClass="btn-primary"/>

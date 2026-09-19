@@ -230,6 +230,11 @@ public class GMEvent implements Serializable {
             throw new IllegalStateException("This event does not use Order Book trading mechanism.");
         }
 
+        User orderOwner = usersMap.get(order.getUserName().toLowerCase());
+        if (orderOwner != null) {
+            orderOwner.recordOrderSubmission(id, order.getOptionName(), order.getType().name(), order.getSharesCount(), order.getPricePerShare());
+        }
+
         OrderBook ob = getOrderBookForOption(order.getOptionName());
         boolean isOnPurchaseFee = (commissionType == CommissionType.ON_PURCHASE);
 

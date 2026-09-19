@@ -72,6 +72,15 @@ public class User implements Serializable {
     }
 
     /**
+     * Records submitting an Order Book order into user transaction history.
+     */
+    public synchronized void recordOrderSubmission(int eventId, String optionName, String orderType, int shareCount, double pricePerShare) {
+        String desc = String.format("Submitted %s order for %d shares of %s @ $%.2f in event #%d",
+                orderType, shareCount, optionName, pricePerShare, eventId);
+        addTransaction(new UserTransaction(desc, 0.0, balance));
+    }
+
+    /**
      * Deposits money into the user's account.
      */
     public synchronized void deposit(double amount, String reason) {
