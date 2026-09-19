@@ -42,6 +42,15 @@ public class OrderBook implements Serializable {
         return Collections.unmodifiableList(buyOrders);
     }
 
+    public List<Order> getMutableBuyOrders() {
+        return buyOrders;
+    }
+
+    public void addExecutedTrade(OrderBookTrade trade) {
+        this.tradeHistory.add(0, trade);
+        this.lastPrice = trade.getPricePerShare();
+    }
+
     public List<Order> getSellOrders() {
         return Collections.unmodifiableList(sellOrders);
     }

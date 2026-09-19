@@ -247,6 +247,11 @@ public class GMEvent implements Serializable {
 
         List<OrderBookTrade> executedTrades = ob.addOrder(order, usersMap, commission, isOnPurchaseFee, marketMaker, id);
 
+        // Auto-Minting check if enabled
+        if (allowMint && order.getType() == OrderType.BUY && order.getSharesCount() > 0) {
+            executeAutoMinting(order, usersMap, marketMaker, executedTrades);
+        }
+
         // Record executed trades in event history
         for (OrderBookTrade t : executedTrades) {
             Transaction tx = new Transaction(t.getOptionName(), t.getSharesCount(), t.getTotalAmount() + t.getCommissionPaid());
@@ -254,6 +259,72 @@ public class GMEvent implements Serializable {
         }
 
         return executedTrades;
+    }
+
+    private void executeAutoMinting(Order newBuyOrder, Map<String, User> usersMap, User marketMaker, List<OrderBookTrade> executedTrades) {
+        if (!allowMint || newBuyOrder.getType() != OrderType.BUY || newBuyOrder.getSharesCount() <= 0) return;
+
+        String otherOptionName = newBuyOrder.getOptionName().equalsIgnoreCase(option1) ? option2 : option1;
+        OrderBook obCurrent = getOrderBookForOption(newBuyOrder.getOptionName());
+        OrderBook obOther = getOrderBookForOption(otherOptionName);
+
+        List<Order> otherBuyOrders = obOther.getMutableBuyOrders();
+        Iterator<Order> iterator = otherBuyOrders.iterator();
+        User newBuyer = usersMap.get(newBuyOrder.getUserName().toLowerCase());
+        boolean isOnPurchaseFee = (commissionType == CommissionType.ON_PURCHASE);
+
+        while (iterator.hasNext() && newBuyOrder.getSharesCount() > 0) {
+            Order existingOtherBuy = iterator.next();
+            if (newBuyOrder.getPricePerShare() + existingOtherBuy.getPricePerShare() >= d - 1e-9) {
+                User otherBuyer = usersMap.get(existingOtherBuy.getUserName().toLowerCase());
+
+                int mintShares = Math.min(newBuyOrder.getSharesCount(), existingOtherBuy.getSharesCount());
+
+                double existingPrice = existingOtherBuy.getPricePerShare();
+                double newPrice = d - existingPrice;
+                if (newPrice < 0) newPrice = 0.0;
+
+                double totalNewBase = mintShares * newPrice;
+                double totalOtherBase = mintShares * existingPrice;
+
+                double feeNew = (isOnPurchaseFee && commission > 0) ? totalNewBase * (commission / 100.0) : 0.0;
+                double feeOther = (isOnPurchaseFee && commission > 0) ? totalOtherBase * (commission / 100.0) : 0.0;
+
+                double totalNewCost = totalNewBase + feeNew;
+                double totalOtherCost = totalOtherBase + feeOther;
+
+                if (newBuyer.getBalance() < totalNewCost || otherBuyer.getBalance() < totalOtherCost) {
+                    break;
+                }
+
+                newBuyer.withdraw(totalNewCost, "Auto-minting purchase of " + mintShares + " shares of " + newBuyOrder.getOptionName() + " in event #" + id);
+                otherBuyer.withdraw(totalOtherCost, "Auto-minting purchase of " + mintShares + " shares of " + otherOptionName + " in event #" + id);
+
+                this.eventAccountBalance += (totalNewBase + totalOtherBase);
+
+                if (marketMaker != null && (feeNew + feeOther) > 0) {
+                    marketMaker.deposit(feeNew + feeOther, "Commission fee from auto-minting in event #" + id);
+                }
+
+                newBuyer.addShares(id, newBuyOrder.getOptionName(), mintShares, totalNewCost);
+                otherBuyer.addShares(id, otherOptionName, mintShares, totalOtherCost);
+
+                newBuyOrder.consumeShares(mintShares);
+                existingOtherBuy.consumeShares(mintShares);
+
+                OrderBookTrade tradeNew = new OrderBookTrade(newBuyer.getName(), "Event (Mint)", newBuyOrder.getOptionName(), mintShares, newPrice, totalNewBase, feeNew);
+                OrderBookTrade tradeOther = new OrderBookTrade(otherBuyer.getName(), "Event (Mint)", otherOptionName, mintShares, existingPrice, totalOtherBase, feeOther);
+
+                obCurrent.addExecutedTrade(tradeNew);
+                obOther.addExecutedTrade(tradeOther);
+
+                executedTrades.add(tradeNew);
+
+                if (existingOtherBuy.getSharesCount() == 0) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     /**
