@@ -1,5 +1,6 @@
 package engine.model;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -7,7 +8,8 @@ import java.util.*;
  * Users can be regular traders or Market Makers (MM) for specific events.
  * Keeps track of account balance, active holdings per event option, and transactions.
  */
-public class User {
+public class User implements Serializable {
+    private static final long serialVersionUID = 2L;
     private final String name;
     private double balance;
     private boolean isBlocked;
@@ -172,7 +174,8 @@ public class User {
     /**
      * Inner class representing a balance history entry.
      */
-    public static class UserTransaction {
+    public static class UserTransaction implements Serializable {
+        private static final long serialVersionUID = 2L;
         private final String description;
         private final double amount;
         private final double balanceAfter;

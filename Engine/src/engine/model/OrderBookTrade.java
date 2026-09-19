@@ -1,9 +1,12 @@
 package engine.model;
 
+import java.io.Serializable;
+
 /**
  * Represents an executed trade in the Order Book (matching buyer and seller).
  */
-public class OrderBookTrade {
+public class OrderBookTrade implements Serializable {
+    private static final long serialVersionUID = 2L;
     private final String buyerName;
     private final String sellerName;
     private final String optionName;

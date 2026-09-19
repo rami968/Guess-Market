@@ -1,11 +1,13 @@
 package engine.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Represents a single trading order submitted by a user in an Order Book event.
  */
-public class Order {
+public class Order implements Serializable {
+    private static final long serialVersionUID = 2L;
     private static int idCounter = 1;
 
     private final int id;

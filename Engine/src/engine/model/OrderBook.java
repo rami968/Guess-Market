@@ -1,5 +1,6 @@
 package engine.model;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -7,7 +8,8 @@ import java.util.*;
  * Contains pending buy orders (bids) and sell orders (asks),
  * performs automatic trade matching, and maintains price statistics.
  */
-public class OrderBook {
+public class OrderBook implements Serializable {
+    private static final long serialVersionUID = 2L;
     private final String optionName;
     private final double baseValue; // Denominator 'd'
 
