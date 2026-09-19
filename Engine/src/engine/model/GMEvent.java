@@ -232,6 +232,13 @@ public class GMEvent implements Serializable {
 
         User orderOwner = usersMap.get(order.getUserName().toLowerCase());
         if (orderOwner != null) {
+            if (order.getType() == OrderType.SELL) {
+                int currentShares = orderOwner.getSharesCount(id, order.getOptionName());
+                if (currentShares < order.getSharesCount()) {
+                    throw new IllegalArgumentException(String.format("User '%s' only holds %d shares of '%s' (cannot submit SELL order for %d shares).",
+                            orderOwner.getName(), currentShares, order.getOptionName(), order.getSharesCount()));
+                }
+            }
             orderOwner.recordOrderSubmission(id, order.getOptionName(), order.getType().name(), order.getSharesCount(), order.getPricePerShare());
         }
 
