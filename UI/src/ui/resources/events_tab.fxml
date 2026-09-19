@@ -152,6 +152,7 @@
             <VBox fx:id="lmsrContainer" styleClass="card-panel" spacing="10.0" visible="false">
                 <Label text="LMSR Share Purchase" styleClass="section-title"/>
                 <HBox spacing="15.0" alignment="CENTER_LEFT">
+                    <VBox spacing="2.0"><Label text="User:" styleClass="stat-label"/><ComboBox fx:id="lmsrUserCombo" prefWidth="120.0"/></VBox>
                     <VBox spacing="2.0"><Label text="Option:" styleClass="stat-label"/><ComboBox fx:id="lmsrOptionCombo" prefWidth="130.0"/></VBox>
                     <VBox spacing="2.0"><Label text="Shares Count:" styleClass="stat-label"/><Spinner fx:id="lmsrCountSpinner" prefWidth="100.0"/></VBox>
                     <Button fx:id="lmsrBuyButton" text="Buy LMSR Shares" onAction="#handleBuyLMSR" styleClass="btn-primary"/>

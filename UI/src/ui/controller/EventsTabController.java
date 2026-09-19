@@ -77,6 +77,7 @@ public class EventsTabController {
 
     // LMSR Trading Form
     @FXML private VBox lmsrContainer;
+    @FXML private ComboBox<String> lmsrUserCombo;
     @FXML private ComboBox<String> lmsrOptionCombo;
     @FXML private Spinner<Integer> lmsrCountSpinner;
     @FXML private Button lmsrBuyButton;
@@ -194,6 +195,12 @@ public class EventsTabController {
             userSelectorCombo.setItems(usernames);
             if (!usernames.isEmpty() && userSelectorCombo.getValue() == null) {
                 userSelectorCombo.setValue(usernames.get(0));
+            }
+        }
+        if (lmsrUserCombo != null) {
+            lmsrUserCombo.setItems(usernames);
+            if (!usernames.isEmpty() && lmsrUserCombo.getValue() == null) {
+                lmsrUserCombo.setValue(usernames.get(0));
             }
         }
 
@@ -334,7 +341,7 @@ public class EventsTabController {
     @FXML
     private void handleBuyLMSR() {
         if (selectedEvent == null || engineService == null) return;
-        String user = userSelectorCombo != null ? userSelectorCombo.getValue() : null;
+        String user = lmsrUserCombo != null ? lmsrUserCombo.getValue() : (userSelectorCombo != null ? userSelectorCombo.getValue() : null);
         String option = lmsrOptionCombo != null ? lmsrOptionCombo.getValue() : null;
         int shares = lmsrCountSpinner != null ? lmsrCountSpinner.getValue() : 1;
         int optionIndex = option.equalsIgnoreCase(selectedEvent.getOption1()) ? 1 : 2;
