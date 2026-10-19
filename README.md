@@ -4,7 +4,6 @@
 [![JavaFX](https://img.shields.io/badge/JavaFX-21-blue.svg)](https://openjfx.io/)
 [![Tomcat](https://img.shields.io/badge/Apache%20Tomcat-10.1%20(Jakarta%20EE)-yellow.svg)](https://tomcat.apache.org/)
 [![Architecture](https://img.shields.io/badge/Architecture-Distributed%20Client--Server-brightgreen.svg)]()
-[![Bonus](https://img.shields.io/badge/Bonus-Live%20Chat%20Room%20(5%20pts)-success.svg)]()
 
 > **Final Capstone Project**  
 > Developed and submitted by: **Rami Zargian** (ID: `324081231`)  
