@@ -1,5 +1,6 @@
 package engine.model;
 
+import engine.dto.*;
 import engine.lmsr.LMSRCalculator;
 import java.io.Serializable;
 import java.util.*;
@@ -362,8 +363,9 @@ public class GMEvent implements Serializable {
                 }
                 double netPayout = grossPayout - fee;
                 u.deposit(netPayout, "Winning payout for " + winningShares + " shares in event #" + id);
-                if (eventAccountBalance >= netPayout) {
-                    eventAccountBalance -= netPayout;
+                eventAccountBalance -= grossPayout;
+                if (eventAccountBalance < 0.0) {
+                    eventAccountBalance = 0.0;
                 }
             }
         }
@@ -371,8 +373,9 @@ public class GMEvent implements Serializable {
         // Return remaining subsidy to Market Maker if LMSR
         if (eventType == EventType.LMSR && eventAccountBalance > 0 && mmUser != null) {
             mmUser.deposit(eventAccountBalance, "Return of remaining subsidy from event #" + id);
-            eventAccountBalance = 0.0;
         }
+        // Upon closing, the event account is emptied completely (0.0$)
+        this.eventAccountBalance = 0.0;
     }
 
     public static class PurchaseResult {

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ui.controller.LoginController"
+      stylesheets="@style.css"
+      alignment="CENTER" spacing="18.0"
+      prefWidth="450.0" prefHeight="400.0"
+      style="-fx-background-color: #1e1e2f; -fx-padding: 30px;">
+
+    <!-- Title and Subtitle -->
+    <VBox alignment="CENTER" spacing="6.0">
+        <Label text="Guess Market" styleClass="app-title" style="-fx-font-size: 26px; -fx-font-weight: bold;"/>
+        <Label text="Prediction Market Trading Platform" style="-fx-text-fill: #8f92a1; -fx-font-size: 13px;"/>
+    </VBox>
+
+    <Separator style="-fx-opacity: 0.2;"/>
+
+    <!-- Form Inputs -->
+    <VBox spacing="14.0" maxWidth="350.0">
+        <VBox spacing="5.0">
+            <Label text="Server URL:" style="-fx-font-weight: bold; -fx-text-fill: #e1e1e6; -fx-font-size: 12px;"/>
+            <TextField fx:id="serverUrlField" text="http://localhost:8080/guess_market"
+                       promptText="http://localhost:8080/guess_market"
+                       style="-fx-background-color: #27293d; -fx-text-fill: #00f2fe; -fx-border-color: #383a53; -fx-border-radius: 6px; -fx-background-radius: 6px; -fx-padding: 8px;"/>
+        </VBox>
+
+        <VBox spacing="5.0">
+            <Label text="Enter Username:" style="-fx-font-weight: bold; -fx-text-fill: #e1e1e6; -fx-font-size: 12px;"/>
+            <TextField fx:id="usernameField" promptText="e.g. Avrum, Menash, Rami..."
+                       onAction="#handleLogin"
+                       style="-fx-background-color: #27293d; -fx-text-fill: #ffffff; -fx-border-color: #383a53; -fx-border-radius: 6px; -fx-background-radius: 6px; -fx-padding: 8px;"/>
+        </VBox>
+    </VBox>
+
+    <!-- Error / Status Message -->
+    <Label fx:id="statusLabel" text="" wrapText="true" alignment="CENTER" textAlignment="CENTER"
+           maxWidth="350.0" style="-fx-text-fill: #f5365c; -fx-font-weight: bold; -fx-font-size: 12px;"/>
+
+    <ProgressIndicator fx:id="progressIndicator" visible="false" prefWidth="30.0" prefHeight="30.0"/>
+
+    <!-- Login Button -->
+    <Button fx:id="loginButton" text="Connect &amp; Enter Market" onAction="#handleLogin"
+            maxWidth="350.0" prefHeight="38.0" styleClass="btn-primary" style="-fx-font-size: 14px;"/>
+
+</VBox>

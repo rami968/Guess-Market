@@ -195,16 +195,26 @@
     -fx-text-fill: #00f2fe;
 }
 
+.stat-badge {
+    -fx-background-color: #1e1e2f;
+    -fx-padding: 3px 8px;
+    -fx-background-radius: 6px;
+    -fx-border-color: #383a53;
+    -fx-border-radius: 6px;
+    -fx-alignment: center-left;
+}
+
 .stat-label {
-    -fx-font-size: 13px;
+    -fx-font-size: 12px;
     -fx-text-fill: #74f2ce;
     -fx-font-weight: bold;
 }
 
 .stat-value {
-    -fx-font-size: 15px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: #ffffff;
+    -fx-font-family: 'Consolas', monospace;
 }
 
 /* Progress Bar */
@@ -259,3 +269,27 @@
     -fx-text-fill: #ffffff;
     -fx-background-color: #1e1e2f;
 }
+
+/* Filter Toggle Buttons */
+.btn-filter {
+    -fx-background-color: #27293d;
+    -fx-text-fill: #e1e1e6;
+    -fx-font-size: 11px;
+    -fx-padding: 5px 11px;
+    -fx-background-radius: 4px;
+    -fx-border-color: #383a53;
+    -fx-border-radius: 4px;
+    -fx-cursor: hand;
+}
+
+.btn-filter:hover {
+    -fx-background-color: #383a53;
+}
+
+.btn-filter:selected {
+    -fx-background-color: linear-gradient(to right, #4facfe, #00f2fe);
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+    -fx-border-color: #00f2fe;
+}
+

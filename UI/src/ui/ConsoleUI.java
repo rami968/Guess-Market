@@ -2,7 +2,6 @@ package ui;
 
 import engine.dto.*;
 import engine.exception.XMLException;
-import engine.model.EventStatus;
 import engine.service.EngineService;
 
 import java.util.List;

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ui.controller.ChatTabController"
+      stylesheets="@style.css"
+      spacing="12.0">
+    <padding>
+        <Insets top="15.0" right="15.0" bottom="15.0" left="15.0"/>
+    </padding>
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="15.0" styleClass="card-panel">
+        <Label text="Market Chat Room" styleClass="section-title"/>
+        <Label text="• Live global discussion between all participants (Bonus Feature)" styleClass="stat-label"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="chatStatusLabel" text="Active" styleClass="stat-value" style="-fx-text-fill: #2dce89;"/>
+    </HBox>
+
+    <!-- Chat Messages View -->
+    <ListView fx:id="chatListView" VBox.vgrow="ALWAYS"
+              style="-fx-background-color: #27293d; -fx-border-color: #383a53; -fx-border-radius: 6px; -fx-background-radius: 6px;"/>
+
+    <!-- Send Message Bar -->
+    <HBox spacing="10.0" alignment="CENTER_LEFT">
+        <TextField fx:id="messageInputField" promptText="Type a message to all participants... (Press Enter to send)"
+                   onAction="#handleSendMessage"
+                   HBox.hgrow="ALWAYS"
+                   style="-fx-background-color: #27293d; -fx-text-fill: #ffffff; -fx-border-color: #383a53; -fx-border-radius: 6px; -fx-background-radius: 6px; -fx-padding: 10px;"/>
+        <Button fx:id="sendButton" text="Send" onAction="#handleSendMessage"
+                styleClass="btn-primary" prefWidth="100.0" prefHeight="38.0"/>
+    </HBox>
+
+</VBox>

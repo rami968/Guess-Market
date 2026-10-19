@@ -1,43 +1,38 @@
 package ui;
 
-import engine.service.EngineService;
-import engine.service.EngineServiceImpl;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import ui.controller.MainController;
+import ui.controller.LoginController;
 
 import java.net.URL;
 
 /**
- * JavaFX Application Launcher for Guess Market Exercise 2.
+ * JavaFX Application Launcher for Guess Market Exercise 3 (Client-Server).
+ * Starts with the Login window for user registration/authentication.
  */
 public class MainApp extends Application {
 
-    private EngineService engineService;
-
     @Override
     public void start(Stage primaryStage) throws Exception {
-        this.engineService = new EngineServiceImpl();
-
-        URL fxmlUrl = getClass().getResource("/ui/resources/main.fxml");
+        URL fxmlUrl = getClass().getResource("/ui/resources/login.fxml");
         if (fxmlUrl == null) {
-            fxmlUrl = getClass().getResource("resources/main.fxml");
+            fxmlUrl = getClass().getResource("resources/login.fxml");
         }
         if (fxmlUrl == null) {
-            throw new IllegalStateException("Could not find main.fxml resource file.");
+            throw new IllegalStateException("Could not find login.fxml resource file.");
         }
 
         FXMLLoader loader = new FXMLLoader(fxmlUrl);
         Parent root = loader.load();
 
-        MainController mainController = loader.getController();
-        mainController.setPrimaryStage(primaryStage);
-        mainController.setEngineService(engineService);
+        LoginController loginController = loader.getController();
+        loginController.setStage(primaryStage);
 
-        Scene scene = new Scene(root, 1150, 750);
+        Scene scene = new Scene(root, 480, 440);
 
         URL cssUrl = getClass().getResource("/ui/resources/style.css");
         if (cssUrl == null) {
@@ -47,10 +42,13 @@ public class MainApp extends Application {
             scene.getStylesheets().add(cssUrl.toExternalForm());
         }
 
-        primaryStage.setTitle("Guess Market - Prediction & Trading Platform (Exercise 2)");
-        primaryStage.setMinWidth(900);
-        primaryStage.setMinHeight(600);
+        primaryStage.setTitle("Guess Market • Login");
+        primaryStage.setResizable(false);
         primaryStage.setScene(scene);
+        primaryStage.setOnCloseRequest(e -> {
+            Platform.exit();
+            System.exit(0);
+        });
         primaryStage.show();
     }
 

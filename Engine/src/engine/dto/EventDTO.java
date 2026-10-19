@@ -1,13 +1,11 @@
 package engine.dto;
 
-import engine.model.CommissionType;
-import engine.model.EventStatus;
-import engine.model.EventType;
+import java.io.Serializable;
 
 /**
  * Immutable DTO representing comprehensive event information for the UI.
  */
-public class EventDTO {
+public class EventDTO implements Serializable {
     private final int id;
     private final String name;
     private final String description;
@@ -64,7 +62,6 @@ public class EventDTO {
     public double getTotalCommissionCollected() { return totalCommissionCollected; }
     public double getProbabilityOption1() { return probabilityOption1; }
     public double getProbabilityOption2() { return probabilityOption2; }
-
     public OrderBookStatsDTO getOrderBookStatsOption1() { return orderBookStatsOption1; }
     public OrderBookStatsDTO getOrderBookStatsOption2() { return orderBookStatsOption2; }
 }

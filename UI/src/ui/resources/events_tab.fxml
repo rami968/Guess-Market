@@ -6,7 +6,7 @@
 
 <SplitPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="ui.controller.EventsTabController"
-           dividerPositions="0.4">
+           dividerPositions="0.33">
 
     <!-- Left Panel: Filter Line & Events List -->
     <VBox spacing="10.0">
@@ -14,21 +14,28 @@
             <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
         </padding>
 
-        <!-- Filter Controls -->
-        <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="card-panel">
-            <VBox spacing="2.0">
-                <Label text="Type:" styleClass="stat-label"/>
-                <ComboBox fx:id="typeFilterCombo" prefWidth="110.0"/>
-            </VBox>
-            <VBox spacing="2.0">
-                <Label text="Status:" styleClass="stat-label"/>
-                <ComboBox fx:id="statusFilterCombo" prefWidth="110.0"/>
-            </VBox>
-            <VBox spacing="2.0">
-                <Label text="Fee Method:" styleClass="stat-label"/>
-                <ComboBox fx:id="commissionFilterCombo" prefWidth="120.0"/>
-            </VBox>
-        </HBox>
+        <!-- Filter Controls (Toggle Buttons) -->
+        <VBox spacing="8.0" styleClass="card-panel">
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="Type:" styleClass="stat-label" minWidth="65.0"/>
+                <ToggleButton fx:id="filterTypeAll" text="All" selected="true" styleClass="btn-filter"/>
+                <ToggleButton fx:id="filterTypeLMSR" text="LMSR" styleClass="btn-filter"/>
+                <ToggleButton fx:id="filterTypeOB" text="Order Book" styleClass="btn-filter"/>
+            </HBox>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="Status:" styleClass="stat-label" minWidth="65.0"/>
+                <ToggleButton fx:id="filterStatusAll" text="All" selected="true" styleClass="btn-filter"/>
+                <ToggleButton fx:id="filterStatusActive" text="Active" styleClass="btn-filter"/>
+                <ToggleButton fx:id="filterStatusInactive" text="Inactive" styleClass="btn-filter"/>
+                <ToggleButton fx:id="filterStatusClosed" text="Closed" styleClass="btn-filter"/>
+            </HBox>
+            <HBox spacing="8.0" alignment="CENTER_LEFT">
+                <Label text="Fee Method:" styleClass="stat-label" minWidth="65.0"/>
+                <ToggleButton fx:id="filterFeeAll" text="All" selected="true" styleClass="btn-filter"/>
+                <ToggleButton fx:id="filterFeePurchase" text="On Purchase" styleClass="btn-filter"/>
+                <ToggleButton fx:id="filterFeeClose" text="On Close" styleClass="btn-filter"/>
+            </HBox>
+        </VBox>
 
         <!-- Events Table -->
         <TableView fx:id="eventsTable" VBox.vgrow="ALWAYS">
@@ -74,28 +81,28 @@
                     <!-- Option 1 Order Book -->
                     <VBox styleClass="card-panel" HBox.hgrow="ALWAYS" spacing="5.0">
                         <Label fx:id="opt1NameLabel" text="Option 1" styleClass="section-title"/>
-                        <GridPane hgap="12.0" vgap="6.0">
-                            <HBox spacing="4.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                                <Label text="LAST:" styleClass="stat-label"/>
-                                <Label fx:id="opt1LastLabel" text="0.00" styleClass="stat-value"/>
+                        <FlowPane hgap="8.0" vgap="6.0">
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="LAST:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt1LastLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                            <HBox spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                                <Label text="BID:" styleClass="stat-label"/>
-                                <Label fx:id="opt1BidLabel" text="0.00" styleClass="stat-value"/>
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="BID:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt1BidLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                            <HBox spacing="4.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
-                                <Label text="ASK:" styleClass="stat-label"/>
-                                <Label fx:id="opt1AskLabel" text="0.00" styleClass="stat-value"/>
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="ASK:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt1AskLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                            <HBox spacing="4.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                <Label text="MID:" styleClass="stat-label"/>
-                                <Label fx:id="opt1MidLabel" text="0.00" styleClass="stat-value"/>
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="MID:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt1MidLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                            <HBox spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                <Label text="SPREAD:" styleClass="stat-label"/>
-                                <Label fx:id="opt1SpreadLabel" text="0.00" styleClass="stat-value"/>
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="SPREAD:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt1SpreadLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                        </GridPane>
+                        </FlowPane>
                         <Label text="Buy Orders (BIDs)" styleClass="stat-label"/>
                         <TableView fx:id="opt1BuyTable" prefHeight="130.0"/>
                         <Label text="Sell Orders (ASKs)" styleClass="stat-label"/>
@@ -105,28 +112,28 @@
                     <!-- Option 2 Order Book -->
                     <VBox styleClass="card-panel" HBox.hgrow="ALWAYS" spacing="5.0">
                         <Label fx:id="opt2NameLabel" text="Option 2" styleClass="section-title"/>
-                        <GridPane hgap="12.0" vgap="6.0">
-                            <HBox spacing="4.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                                <Label text="LAST:" styleClass="stat-label"/>
-                                <Label fx:id="opt2LastLabel" text="0.00" styleClass="stat-value"/>
+                        <FlowPane hgap="8.0" vgap="6.0">
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="LAST:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt2LastLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                            <HBox spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                                <Label text="BID:" styleClass="stat-label"/>
-                                <Label fx:id="opt2BidLabel" text="0.00" styleClass="stat-value"/>
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="BID:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt2BidLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                            <HBox spacing="4.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
-                                <Label text="ASK:" styleClass="stat-label"/>
-                                <Label fx:id="opt2AskLabel" text="0.00" styleClass="stat-value"/>
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="ASK:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt2AskLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                            <HBox spacing="4.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                <Label text="MID:" styleClass="stat-label"/>
-                                <Label fx:id="opt2MidLabel" text="0.00" styleClass="stat-value"/>
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="MID:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt2MidLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                            <HBox spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                <Label text="SPREAD:" styleClass="stat-label"/>
-                                <Label fx:id="opt2SpreadLabel" text="0.00" styleClass="stat-value"/>
+                            <HBox spacing="4.0" styleClass="stat-badge" alignment="CENTER_LEFT">
+                                <Label text="SPREAD:" styleClass="stat-label" minWidth="-Infinity"/>
+                                <Label fx:id="opt2SpreadLabel" text="0.00" styleClass="stat-value" minWidth="-Infinity"/>
                             </HBox>
-                        </GridPane>
+                        </FlowPane>
                         <Label text="Buy Orders (BIDs)" styleClass="stat-label"/>
                         <TableView fx:id="opt2BuyTable" prefHeight="130.0"/>
                         <Label text="Sell Orders (ASKs)" styleClass="stat-label"/>

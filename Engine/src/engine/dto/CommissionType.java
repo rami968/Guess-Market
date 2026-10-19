@@ -1,11 +1,12 @@
-package engine.model;
+package engine.dto;
+
+import java.io.Serializable;
 
 // Represents the commission type of an event.
-public enum CommissionType {
+public enum CommissionType implements Serializable {
     ON_PURCHASE,
     ON_CLOSE;
 
-    // Parses string from XML ("on-purchase" or "on-close").
     public static CommissionType fromString(String text) {
         if (text == null) {
             throw new IllegalArgumentException("Commission type cannot be null");

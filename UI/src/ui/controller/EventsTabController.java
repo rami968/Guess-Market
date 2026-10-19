@@ -1,31 +1,44 @@
 package ui.controller;
 
 import engine.dto.*;
-import engine.model.EventStatus;
-import engine.model.EventType;
-import engine.service.EngineService;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import ui.http.HttpClientManager;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * Controller for the Events Tab (Slide 1 of lecturer wireframe).
- * Handles filtering, event summary table, drill-down event details, dual Order Book views, and trading.
+ * Controller for the Events & Trading Tab.
+ * Manages event filtering, drill-down details, dual Order Book tables, and trading actions.
  */
 public class EventsTabController {
 
-    // Filters
-    @FXML private ComboBox<String> typeFilterCombo;
-    @FXML private ComboBox<String> statusFilterCombo;
-    @FXML private ComboBox<String> commissionFilterCombo;
+    // Filter Toggle Buttons
+    @FXML private ToggleButton filterTypeAll;
+    @FXML private ToggleButton filterTypeLMSR;
+    @FXML private ToggleButton filterTypeOB;
+
+    @FXML private ToggleButton filterStatusAll;
+    @FXML private ToggleButton filterStatusActive;
+    @FXML private ToggleButton filterStatusInactive;
+    @FXML private ToggleButton filterStatusClosed;
+
+    @FXML private ToggleButton filterFeeAll;
+    @FXML private ToggleButton filterFeePurchase;
+    @FXML private ToggleButton filterFeeClose;
+
+    private ToggleGroup typeGroup;
+    private ToggleGroup statusGroup;
+    private ToggleGroup feeGroup;
 
     // Events Table
     @FXML private TableView<EventDTO> eventsTable;
@@ -37,7 +50,7 @@ public class EventsTabController {
     @FXML private TableColumn<EventDTO, String> colMarketMaker;
     @FXML private TableColumn<EventDTO, Double> colBalance;
 
-    // Details View Controls
+    // Details View
     @FXML private Label eventNameLabel;
     @FXML private Label eventDescriptionLabel;
     @FXML private Label eventStatusLabel;
@@ -46,7 +59,7 @@ public class EventsTabController {
     @FXML private Button activateButton;
     @FXML private Button closeEventButton;
 
-    // Order Book Panels (Option 1 & Option 2)
+    // Order Book Dual Panels
     @FXML private VBox orderBookContainer;
 
     @FXML private Label opt1NameLabel;
@@ -67,7 +80,7 @@ public class EventsTabController {
     @FXML private TableView<OrderDTO> opt2BuyTable;
     @FXML private TableView<OrderDTO> opt2SellTable;
 
-    // Order Submission Form
+    // Order Book Submission Form
     @FXML private ComboBox<String> userSelectorCombo;
     @FXML private ComboBox<String> optionSelectorCombo;
     @FXML private ComboBox<String> actionTypeCombo;
@@ -82,54 +95,74 @@ public class EventsTabController {
     @FXML private Spinner<Integer> lmsrCountSpinner;
     @FXML private Button lmsrBuyButton;
 
-    private EngineService engineService;
+    private UserDTO currentUser;
     private MainController mainController;
+
+    private final List<EventDTO> rawEventsList = new ArrayList<>();
     private EventDTO selectedEvent;
 
-    public void setEngineService(EngineService engineService, MainController mainController) {
-        this.engineService = engineService;
+    public void setSession(UserDTO user, MainController mainController) {
+        this.currentUser = user;
         this.mainController = mainController;
+
+        if (userSelectorCombo != null) {
+            userSelectorCombo.getItems().setAll(user.getName());
+            userSelectorCombo.setValue(user.getName());
+            userSelectorCombo.setDisable(true); // User trades for themselves
+        }
+        if (lmsrUserCombo != null) {
+            lmsrUserCombo.getItems().setAll(user.getName());
+            lmsrUserCombo.setValue(user.getName());
+            lmsrUserCombo.setDisable(true);
+        }
     }
 
     @FXML
     public void initialize() {
-        setupFilters();
+        setupFilterGroups();
         setupEventsTable();
         setupOrderBookTables();
         setupFormControls();
-        
-        if (orderBookContainer != null) orderBookContainer.setVisible(false);
-        if (lmsrContainer != null) lmsrContainer.setVisible(false);
     }
 
-    private void setupFilters() {
-        if (typeFilterCombo != null) {
-            typeFilterCombo.setItems(FXCollections.observableArrayList("ALL", "LMSR", "ORDER_BOOK"));
-            typeFilterCombo.setValue("ALL");
-            typeFilterCombo.setOnAction(e -> refreshEvents());
-        }
-        if (statusFilterCombo != null) {
-            statusFilterCombo.setItems(FXCollections.observableArrayList("ALL", "INACTIVE", "ACTIVE", "CLOSED"));
-            statusFilterCombo.setValue("ALL");
-            statusFilterCombo.setOnAction(e -> refreshEvents());
-        }
-        if (commissionFilterCombo != null) {
-            commissionFilterCombo.setItems(FXCollections.observableArrayList("ALL", "ON_PURCHASE", "ON_CLOSE"));
-            commissionFilterCombo.setValue("ALL");
-            commissionFilterCombo.setOnAction(e -> refreshEvents());
-        }
+    private void setupFilterGroups() {
+        typeGroup = new ToggleGroup();
+        filterTypeAll.setToggleGroup(typeGroup);
+        filterTypeLMSR.setToggleGroup(typeGroup);
+        filterTypeOB.setToggleGroup(typeGroup);
+        typeGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
+            if (newT == null) filterTypeAll.setSelected(true);
+            applyFilters();
+        });
+
+        statusGroup = new ToggleGroup();
+        filterStatusAll.setToggleGroup(statusGroup);
+        filterStatusActive.setToggleGroup(statusGroup);
+        filterStatusInactive.setToggleGroup(statusGroup);
+        filterStatusClosed.setToggleGroup(statusGroup);
+        statusGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
+            if (newT == null) filterStatusAll.setSelected(true);
+            applyFilters();
+        });
+
+        feeGroup = new ToggleGroup();
+        filterFeeAll.setToggleGroup(feeGroup);
+        filterFeePurchase.setToggleGroup(feeGroup);
+        filterFeeClose.setToggleGroup(feeGroup);
+        feeGroup.selectedToggleProperty().addListener((obs, oldT, newT) -> {
+            if (newT == null) filterFeeAll.setSelected(true);
+            applyFilters();
+        });
     }
 
     private void setupEventsTable() {
-        if (eventsTable == null) return;
-
-        colId.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getId()).asObject());
-        colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
-        colType.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEventType().name()));
-        colStatus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus().name()));
-        colCommission.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCommission() + "% (" + data.getValue().getCommissionType().name() + ")"));
-        colMarketMaker.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getMarketMakerName()));
-        colBalance.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getAccountBalance()).asObject());
+        colId.setCellValueFactory(d -> new SimpleIntegerProperty(d.getValue().getId()).asObject());
+        colName.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getName()));
+        colType.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEventType().name()));
+        colStatus.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getStatus().name()));
+        colCommission.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCommission() + "% (" + d.getValue().getCommissionType().name() + ")"));
+        colMarketMaker.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getMarketMakerName()));
+        colBalance.setCellValueFactory(d -> new SimpleDoubleProperty(d.getValue().getAccountBalance()).asObject());
 
         eventsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
             if (newSel != null) {
@@ -140,183 +173,226 @@ public class EventsTabController {
     }
 
     private void setupOrderBookTables() {
-        setupOrderTableColumns(opt1BuyTable);
-        setupOrderTableColumns(opt1SellTable);
-        setupOrderTableColumns(opt2BuyTable);
-        setupOrderTableColumns(opt2SellTable);
+        setupOrderColumns(opt1BuyTable);
+        setupOrderColumns(opt1SellTable);
+        setupOrderColumns(opt2BuyTable);
+        setupOrderColumns(opt2SellTable);
     }
 
-    private void setupOrderTableColumns(TableView<OrderDTO> table) {
+    private void setupOrderColumns(TableView<OrderDTO> table) {
         if (table == null) return;
         table.getColumns().clear();
 
-        TableColumn<OrderDTO, String> userCol = new TableColumn<>("User");
-        userCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getUserName()));
+        TableColumn<OrderDTO, String> colUser = new TableColumn<>("User");
+        colUser.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getUserName()));
+        colUser.setPrefWidth(90);
 
-        TableColumn<OrderDTO, Integer> sharesCol = new TableColumn<>("Shares");
-        sharesCol.setCellValueFactory(d -> new SimpleIntegerProperty(d.getValue().getSharesCount()).asObject());
+        TableColumn<OrderDTO, Integer> colShares = new TableColumn<>("Shares");
+        colShares.setCellValueFactory(d -> new SimpleIntegerProperty(d.getValue().getSharesCount()).asObject());
+        colShares.setPrefWidth(65);
 
-        TableColumn<OrderDTO, Double> priceCol = new TableColumn<>("Price");
-        priceCol.setCellValueFactory(d -> new SimpleDoubleProperty(d.getValue().getPricePerShare()).asObject());
+        TableColumn<OrderDTO, Double> colPrice = new TableColumn<>("Price ($)");
+        colPrice.setCellValueFactory(d -> new SimpleDoubleProperty(d.getValue().getPricePerShare()).asObject());
+        colPrice.setPrefWidth(75);
 
-        table.getColumns().addAll(userCol, sharesCol, priceCol);
+        table.getColumns().addAll(colUser, colShares, colPrice);
     }
 
     private void setupFormControls() {
         if (actionTypeCombo != null) {
-            actionTypeCombo.setItems(FXCollections.observableArrayList("BUY", "SELL"));
+            actionTypeCombo.getItems().setAll("BUY", "SELL");
             actionTypeCombo.setValue("BUY");
         }
         if (countSpinner != null) {
-            countSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10000, 10));
+            countSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10000, 1));
         }
         if (lmsrCountSpinner != null) {
-            lmsrCountSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10000, 10));
+            lmsrCountSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10000, 1));
         }
+
+        if (activateButton != null) activateButton.setVisible(false);
+        if (closeEventButton != null) closeEventButton.setVisible(false);
+        if (orderBookContainer != null) orderBookContainer.setVisible(false);
+        if (lmsrContainer != null) lmsrContainer.setVisible(false);
     }
 
-    public void refreshEvents() {
-        if (engineService == null || !engineService.isFileLoaded()) return;
+    // ==================== Data Updates ====================
 
-        String typeF = typeFilterCombo != null ? typeFilterCombo.getValue() : "ALL";
-        String statusF = statusFilterCombo != null ? statusFilterCombo.getValue() : "ALL";
-        String commF = commissionFilterCombo != null ? commissionFilterCombo.getValue() : "ALL";
+    public void updateEventsList(List<EventDTO> events) {
+        Platform.runLater(() -> {
+            rawEventsList.clear();
+            if (events != null) {
+                rawEventsList.addAll(events);
+            }
+            applyFilters();
 
-        List<EventDTO> filtered = engineService.getFilteredEvents(typeF, statusF, commF);
+            // Refresh selected event details if still present
+            if (selectedEvent != null) {
+                Optional<EventDTO> refreshed = rawEventsList.stream()
+                        .filter(e -> e.getName().equalsIgnoreCase(selectedEvent.getName()))
+                        .findFirst();
+                if (refreshed.isPresent()) {
+                    this.selectedEvent = refreshed.get();
+                    displayEventDetails(selectedEvent);
+                }
+            }
+        });
+    }
+
+    private void applyFilters() {
+        if (eventsTable == null) return;
+
+        List<EventDTO> filtered = rawEventsList.stream().filter(e -> {
+            // Type filter
+            if (filterTypeLMSR.isSelected() && e.getEventType() != EventType.LMSR) return false;
+            if (filterTypeOB.isSelected() && e.getEventType() != EventType.ORDER_BOOK) return false;
+
+            // Status filter
+            if (filterStatusActive.isSelected() && e.getStatus() != EventStatus.ACTIVE) return false;
+            if (filterStatusInactive.isSelected() && e.getStatus() != EventStatus.INACTIVE) return false;
+            if (filterStatusClosed.isSelected() && e.getStatus() != EventStatus.CLOSED) return false;
+
+            // Fee filter
+            if (filterFeePurchase.isSelected() && e.getCommissionType() != CommissionType.ON_PURCHASE) return false;
+            if (filterFeeClose.isSelected() && e.getCommissionType() != CommissionType.ON_CLOSE) return false;
+
+            return true;
+        }).collect(Collectors.toList());
+
         eventsTable.setItems(FXCollections.observableArrayList(filtered));
-
-        // Refresh user selectors
-        List<UserDTO> users = engineService.getAllUsers();
-        ObservableList<String> usernames = FXCollections.observableArrayList();
-        for (UserDTO u : users) {
-            usernames.add(u.getName());
-        }
-        if (userSelectorCombo != null) {
-            userSelectorCombo.setItems(usernames);
-            if (!usernames.isEmpty() && userSelectorCombo.getValue() == null) {
-                userSelectorCombo.setValue(usernames.get(0));
-            }
-        }
-        if (lmsrUserCombo != null) {
-            lmsrUserCombo.setItems(usernames);
-            if (!usernames.isEmpty() && lmsrUserCombo.getValue() == null) {
-                lmsrUserCombo.setValue(usernames.get(0));
-            }
-        }
-
-        if (selectedEvent != null) {
-            EventDTO updated = engineService.getEventDetails(selectedEvent.getId());
-            displayEventDetails(updated);
-        }
     }
 
     private void displayEventDetails(EventDTO event) {
         if (event == null) return;
-        this.selectedEvent = event;
 
-        if (eventNameLabel != null) eventNameLabel.setText(event.getName());
-        if (eventDescriptionLabel != null) eventDescriptionLabel.setText(event.getDescription());
-        if (eventStatusLabel != null) eventStatusLabel.setText("Status: " + event.getStatus().name());
-        if (eventMmLabel != null) eventMmLabel.setText("Market Maker: " + event.getMarketMakerName());
-        if (eventBalanceLabel != null) eventBalanceLabel.setText(String.format("Event Balance: $%.2f", event.getAccountBalance()));
+        eventNameLabel.setText(event.getName());
+        eventDescriptionLabel.setText(event.getDescription());
+        eventStatusLabel.setText("Status: " + event.getStatus().name());
+        eventMmLabel.setText("Market Maker: " + event.getMarketMakerName());
+        eventBalanceLabel.setText(String.format("Event Balance: $%.2f", event.getAccountBalance()));
 
-        // Activation / Closure buttons
+        boolean isMM = currentUser != null && currentUser.getName().equalsIgnoreCase(event.getMarketMakerName());
+
         if (activateButton != null) {
-            activateButton.setDisable(event.getStatus() != EventStatus.INACTIVE);
+            activateButton.setVisible(isMM && event.getStatus() == EventStatus.INACTIVE);
         }
         if (closeEventButton != null) {
-            closeEventButton.setDisable(event.getStatus() != EventStatus.ACTIVE);
+            closeEventButton.setVisible(isMM && event.getStatus() == EventStatus.ACTIVE);
         }
 
-        // Toggle UI panels based on EventType
+        // Setup options dropdowns
+        if (optionSelectorCombo != null) {
+            optionSelectorCombo.getItems().setAll(event.getOption1(), event.getOption2());
+            optionSelectorCombo.setValue(event.getOption1());
+        }
+        if (lmsrOptionCombo != null) {
+            lmsrOptionCombo.getItems().setAll(event.getOption1(), event.getOption2());
+            lmsrOptionCombo.setValue(event.getOption1());
+        }
+
         if (event.getEventType() == EventType.ORDER_BOOK) {
             if (orderBookContainer != null) orderBookContainer.setVisible(true);
             if (lmsrContainer != null) lmsrContainer.setVisible(false);
+
+            opt1NameLabel.setText("Option: " + event.getOption1());
+            opt2NameLabel.setText("Option: " + event.getOption2());
 
             updateOrderBookStats(event);
         } else {
             if (orderBookContainer != null) orderBookContainer.setVisible(false);
             if (lmsrContainer != null) lmsrContainer.setVisible(true);
-
-            if (lmsrOptionCombo != null) {
-                lmsrOptionCombo.setItems(FXCollections.observableArrayList(event.getOption1(), event.getOption2()));
-                lmsrOptionCombo.setValue(event.getOption1());
-            }
-        }
-
-        if (optionSelectorCombo != null) {
-            optionSelectorCombo.setItems(FXCollections.observableArrayList(event.getOption1(), event.getOption2()));
-            optionSelectorCombo.setValue(event.getOption1());
         }
     }
 
     private void updateOrderBookStats(EventDTO event) {
         OrderBookStatsDTO s1 = event.getOrderBookStatsOption1();
-        if (s1 != null) {
-            if (opt1NameLabel != null) opt1NameLabel.setText(s1.getOptionName());
-            if (opt1LastLabel != null) opt1LastLabel.setText(String.format("$%.2f", s1.getLastPrice()));
-            if (opt1BidLabel != null) opt1BidLabel.setText(String.format("$%.2f", s1.getHighestBid()));
-            if (opt1AskLabel != null) opt1AskLabel.setText(String.format("$%.2f", s1.getLowestAsk()));
-            if (opt1MidLabel != null) opt1MidLabel.setText(String.format("$%.2f", s1.getMidPrice()));
-            if (opt1SpreadLabel != null) opt1SpreadLabel.setText(String.format("$%.2f", s1.getSpread()));
+        OrderBookStatsDTO s2 = event.getOrderBookStatsOption2();
 
-            if (opt1BuyTable != null) opt1BuyTable.setItems(FXCollections.observableArrayList(s1.getBuyOrders()));
-            if (opt1SellTable != null) opt1SellTable.setItems(FXCollections.observableArrayList(s1.getSellOrders()));
+        if (s1 != null) {
+            opt1LastLabel.setText(String.format("%.2f", s1.getLastPrice()));
+            opt1BidLabel.setText(String.format("%.2f", s1.getHighestBid()));
+            opt1AskLabel.setText(String.format("%.2f", s1.getLowestAsk()));
+            opt1MidLabel.setText(String.format("%.2f", s1.getMidPrice()));
+            opt1SpreadLabel.setText(String.format("%.2f", s1.getSpread()));
+            opt1BuyTable.setItems(FXCollections.observableArrayList(s1.getBuyOrders()));
+            opt1SellTable.setItems(FXCollections.observableArrayList(s1.getSellOrders()));
         }
 
-        OrderBookStatsDTO s2 = event.getOrderBookStatsOption2();
         if (s2 != null) {
-            if (opt2NameLabel != null) opt2NameLabel.setText(s2.getOptionName());
-            if (opt2LastLabel != null) opt2LastLabel.setText(String.format("$%.2f", s2.getLastPrice()));
-            if (opt2BidLabel != null) opt2BidLabel.setText(String.format("$%.2f", s2.getHighestBid()));
-            if (opt2AskLabel != null) opt2AskLabel.setText(String.format("$%.2f", s2.getLowestAsk()));
-            if (opt2MidLabel != null) opt2MidLabel.setText(String.format("$%.2f", s2.getMidPrice()));
-            if (opt2SpreadLabel != null) opt2SpreadLabel.setText(String.format("$%.2f", s2.getSpread()));
-
-            if (opt2BuyTable != null) opt2BuyTable.setItems(FXCollections.observableArrayList(s2.getBuyOrders()));
-            if (opt2SellTable != null) opt2SellTable.setItems(FXCollections.observableArrayList(s2.getSellOrders()));
+            opt2LastLabel.setText(String.format("%.2f", s2.getLastPrice()));
+            opt2BidLabel.setText(String.format("%.2f", s2.getHighestBid()));
+            opt2AskLabel.setText(String.format("%.2f", s2.getLowestAsk()));
+            opt2MidLabel.setText(String.format("%.2f", s2.getMidPrice()));
+            opt2SpreadLabel.setText(String.format("%.2f", s2.getSpread()));
+            opt2BuyTable.setItems(FXCollections.observableArrayList(s2.getBuyOrders()));
+            opt2SellTable.setItems(FXCollections.observableArrayList(s2.getSellOrders()));
         }
     }
 
+    // ==================== Trading & Event Actions ====================
+
     @FXML
     private void handleActivateEvent() {
-        if (selectedEvent == null || engineService == null) return;
-        try {
-            engineService.activateEvent(selectedEvent.getId(), selectedEvent.getMarketMakerName());
-            mainController.showAlert(Alert.AlertType.INFORMATION, "Event Activated", "Event '" + selectedEvent.getName() + "' activated successfully by MM " + selectedEvent.getMarketMakerName() + "!");
-            mainController.refreshAllViews();
-        } catch (Exception e) {
-            mainController.showAlert(Alert.AlertType.ERROR, "Activation Error", e.getMessage());
-        }
+        if (selectedEvent == null || currentUser == null) return;
+
+        Task<EventDTO> task = new Task<>() {
+            @Override
+            protected EventDTO call() throws Exception {
+                return HttpClientManager.getInstance().activateEvent(selectedEvent.getName(), currentUser.getName());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            mainController.showAlert(Alert.AlertType.INFORMATION, "Event Activated",
+                    "Event '" + selectedEvent.getName() + "' is now ACTIVE for trading!");
+            mainController.refreshAllData();
+        });
+
+        task.setOnFailed(e -> {
+            mainController.showAlert(Alert.AlertType.ERROR, "Activation Failed", task.getException().getMessage());
+        });
+
+        new Thread(task).start();
     }
 
     @FXML
     private void handleCloseEvent() {
-        if (selectedEvent == null || engineService == null) return;
+        if (selectedEvent == null || currentUser == null) return;
 
-        List<String> options = Arrays.asList("1. " + selectedEvent.getOption1(), "2. " + selectedEvent.getOption2());
+        List<String> options = List.of("1. " + selectedEvent.getOption1(), "2. " + selectedEvent.getOption2());
         ChoiceDialog<String> dialog = new ChoiceDialog<>(options.get(0), options);
-        dialog.setTitle("Close Event & Select Winner");
+        dialog.setTitle("Close Event & Declare Winner");
         dialog.setHeaderText("Select the winning outcome for event: " + selectedEvent.getName());
         dialog.setContentText("Winning Option:");
 
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             int winningIndex = result.get().startsWith("1") ? 1 : 2;
-            try {
-                engineService.closeEvent(selectedEvent.getId(), selectedEvent.getMarketMakerName(), winningIndex);
-                mainController.showAlert(Alert.AlertType.INFORMATION, "Event Closed", "Event resolved successfully!");
-                mainController.refreshAllViews();
-            } catch (Exception e) {
-                mainController.showAlert(Alert.AlertType.ERROR, "Closure Error", e.getMessage());
-            }
+
+            Task<EventDTO> task = new Task<>() {
+                @Override
+                protected EventDTO call() throws Exception {
+                    return HttpClientManager.getInstance().closeEvent(selectedEvent.getName(), currentUser.getName(), winningIndex);
+                }
+            };
+
+            task.setOnSucceeded(e -> {
+                mainController.showAlert(Alert.AlertType.INFORMATION, "Event Closed",
+                        "Event resolved successfully! Payouts distributed and event account emptied.");
+                mainController.refreshAllData();
+            });
+
+            task.setOnFailed(e -> {
+                mainController.showAlert(Alert.AlertType.ERROR, "Closure Failed", task.getException().getMessage());
+            });
+
+            new Thread(task).start();
         }
     }
 
     @FXML
     private void handleSubmitOrder() {
-        if (selectedEvent == null || engineService == null) return;
-        String user = userSelectorCombo != null ? userSelectorCombo.getValue() : null;
+        if (selectedEvent == null || currentUser == null) return;
         String option = optionSelectorCombo != null ? optionSelectorCombo.getValue() : null;
         String type = actionTypeCombo != null ? actionTypeCombo.getValue() : "BUY";
         int shares = countSpinner != null ? countSpinner.getValue() : 1;
@@ -324,34 +400,59 @@ public class EventsTabController {
         double price;
         try {
             price = Double.parseDouble(priceField.getText().trim());
+            if (price <= 0) {
+                mainController.showAlert(Alert.AlertType.ERROR, "Invalid Input", "Price must be positive.");
+                return;
+            }
         } catch (Exception e) {
             mainController.showAlert(Alert.AlertType.ERROR, "Invalid Input", "Price per share must be a valid number.");
             return;
         }
 
-        try {
-            engineService.submitOrder(selectedEvent.getId(), user, option, type, shares, price);
-            mainController.showAlert(Alert.AlertType.INFORMATION, "Order Submitted", "Order submitted successfully!");
-            mainController.refreshAllViews();
-        } catch (Exception e) {
-            mainController.showAlert(Alert.AlertType.ERROR, "Order Error", e.getMessage());
-        }
+        Task<EventDTO> task = new Task<>() {
+            @Override
+            protected EventDTO call() throws Exception {
+                return HttpClientManager.getInstance().tradeOrderBook(selectedEvent.getName(), currentUser.getName(), option, type, shares, price);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            mainController.showAlert(Alert.AlertType.INFORMATION, "Order Submitted", "Limit order submitted successfully!");
+            mainController.refreshAllData();
+        });
+
+        task.setOnFailed(e -> {
+            mainController.showAlert(Alert.AlertType.ERROR, "Order Error", task.getException().getMessage());
+        });
+
+        new Thread(task).start();
     }
 
     @FXML
     private void handleBuyLMSR() {
-        if (selectedEvent == null || engineService == null) return;
-        String user = lmsrUserCombo != null ? lmsrUserCombo.getValue() : (userSelectorCombo != null ? userSelectorCombo.getValue() : null);
+        if (selectedEvent == null || currentUser == null) return;
         String option = lmsrOptionCombo != null ? lmsrOptionCombo.getValue() : null;
         int shares = lmsrCountSpinner != null ? lmsrCountSpinner.getValue() : 1;
-        int optionIndex = option.equalsIgnoreCase(selectedEvent.getOption1()) ? 1 : 2;
+        int optionIndex = (option != null && option.equalsIgnoreCase(selectedEvent.getOption1())) ? 1 : 2;
 
-        try {
-            PurchaseResultDTO res = engineService.buySharesLMSR(selectedEvent.getId(), user, optionIndex, shares);
-            mainController.showAlert(Alert.AlertType.INFORMATION, "Shares Purchased", String.format("Successfully bought %d shares of %s for $%.2f (Fee: $%.2f)", shares, option, res.getSharePrice(), res.getCommissionPaid()));
-            mainController.refreshAllViews();
-        } catch (Exception e) {
-            mainController.showAlert(Alert.AlertType.ERROR, "Purchase Error", e.getMessage());
-        }
+        Task<PurchaseResultDTO> task = new Task<>() {
+            @Override
+            protected PurchaseResultDTO call() throws Exception {
+                return HttpClientManager.getInstance().tradeLMSR(selectedEvent.getName(), currentUser.getName(), optionIndex, shares);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            PurchaseResultDTO res = task.getValue();
+            mainController.showAlert(Alert.AlertType.INFORMATION, "Shares Purchased",
+                    String.format("Successfully bought %d shares of %s for $%.2f (Fee: $%.2f)", shares, option, res.getSharePrice(), res.getCommissionPaid()));
+            mainController.refreshAllData();
+        });
+
+        task.setOnFailed(e -> {
+            mainController.showAlert(Alert.AlertType.ERROR, "Purchase Error", task.getException().getMessage());
+        });
+
+        new Thread(task).start();
     }
 }

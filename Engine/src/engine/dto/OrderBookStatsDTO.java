@@ -1,11 +1,13 @@
 package engine.dto;
 
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * DTO containing Order Book statistics (LAST, BID, ASK, MID, SPREAD) and order lists.
  */
-public class OrderBookStatsDTO {
+public class OrderBookStatsDTO implements Serializable {
     private final String optionName;
     private final double lastPrice;
     private final double highestBid;
@@ -23,8 +25,8 @@ public class OrderBookStatsDTO {
         this.lowestAsk = lowestAsk;
         this.midPrice = midPrice;
         this.spread = spread;
-        this.buyOrders = buyOrders;
-        this.sellOrders = sellOrders;
+        this.buyOrders = (buyOrders != null) ? Collections.unmodifiableList(buyOrders) : Collections.emptyList();
+        this.sellOrders = (sellOrders != null) ? Collections.unmodifiableList(sellOrders) : Collections.emptyList();
     }
 
     public String getOptionName() { return optionName; }

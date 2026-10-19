@@ -1,7 +1,9 @@
 package engine.dto;
 
+import java.io.Serializable;
+
 // Immutable DTO for displaying a transaction record.
-public class TransactionDTO {
+public class TransactionDTO implements Serializable {
     private final String optionName;
     private final int shareCount;
     private final double pricePaid;
@@ -12,15 +14,7 @@ public class TransactionDTO {
         this.pricePaid = pricePaid;
     }
 
-    public String getOptionName() {
-        return optionName;
-    }
-
-    public int getShareCount() {
-        return shareCount;
-    }
-
-    public double getPricePaid() {
-        return pricePaid;
-    }
+    public String getOptionName() { return optionName; }
+    public int getShareCount() { return shareCount; }
+    public double getPricePaid() { return pricePaid; }
 }

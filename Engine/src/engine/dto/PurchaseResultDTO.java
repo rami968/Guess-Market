@@ -1,7 +1,9 @@
 package engine.dto;
 
+import java.io.Serializable;
+
 // Immutable DTO for purchase receipt returned to UI after buying shares.
-public class PurchaseResultDTO {
+public class PurchaseResultDTO implements Serializable {
     private final double sharePrice;
     private final double commissionPaid;
     private final double totalPaid;
@@ -14,19 +16,8 @@ public class PurchaseResultDTO {
         this.updatedStatus = updatedStatus;
     }
 
-    public double getSharePrice() {
-        return sharePrice;
-    }
-
-    public double getCommissionPaid() {
-        return commissionPaid;
-    }
-
-    public double getTotalPaid() {
-        return totalPaid;
-    }
-
-    public EventTradingStatusDTO getUpdatedStatus() {
-        return updatedStatus;
-    }
+    public double getSharePrice() { return sharePrice; }
+    public double getCommissionPaid() { return commissionPaid; }
+    public double getTotalPaid() { return totalPaid; }
+    public EventTradingStatusDTO getUpdatedStatus() { return updatedStatus; }
 }

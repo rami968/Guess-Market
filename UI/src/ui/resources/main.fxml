@@ -7,22 +7,38 @@
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ui.controller.MainController"
             stylesheets="@style.css"
-            prefWidth="1100.0" prefHeight="750.0">
+            prefWidth="1180.0" prefHeight="780.0">
 
     <!-- Top Bar Header -->
     <top>
-        <VBox spacing="5.0">
+        <VBox spacing="4.0">
             <HBox styleClass="top-bar" alignment="CENTER_LEFT" spacing="15.0">
-                <Button fx:id="loadFileButton" text="Load File" onAction="#handleLoadFile" styleClass="btn-primary"/>
-                <Label fx:id="filePathLabel" text="No file loaded" styleClass="file-path-label" HBox.hgrow="ALWAYS" maxWidth="1.7976931348623157E308"/>
+                <!-- Branding -->
                 <Label text="Guess Market" styleClass="app-title"/>
+                <Label text="Prediction Market Platform" style="-fx-text-fill: #8f92a1; -fx-font-size: 11px;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Current User Info Badge -->
+                <HBox alignment="CENTER" spacing="12.0" style="-fx-background-color: #1e1e2f; -fx-padding: 6px 14px; -fx-background-radius: 6px; -fx-border-color: #383a53; -fx-border-radius: 6px;">
+                    <Label fx:id="userGreetingLabel" text="👤 Connecting..." style="-fx-font-weight: bold; -fx-text-fill: #00f2fe; -fx-font-size: 13px;"/>
+                    <Separator orientation="VERTICAL" style="-fx-opacity: 0.3;"/>
+                    <Label fx:id="balanceHeaderLabel" text="Balance: $0.00" style="-fx-font-weight: bold; -fx-text-fill: #2dce89; -fx-font-size: 13px;"/>
+                </HBox>
+
+                <!-- Actions: Charge & Upload -->
+                <Button fx:id="chargeButton" text="Charge Balance" onAction="#handleChargeFunds"
+                        styleClass="btn-success" style="-fx-font-size: 12px;"/>
+                <Button fx:id="uploadXmlButton" text="Upload XML Events" onAction="#handleUploadXml"
+                        styleClass="btn-primary" style="-fx-font-size: 12px;"/>
             </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <padding>
-                    <Insets left="15.0" right="15.0" bottom="5.0"/>
-                </padding>
-                <ProgressBar fx:id="progressBar" prefWidth="300.0" visible="false"/>
-                <Label fx:id="statusLabel" text="Ready" styleClass="stat-label"/>
+
+            <!-- Status & Polling Bar -->
+            <HBox alignment="CENTER_LEFT" spacing="12.0" style="-fx-background-color: #27293d; -fx-padding: 4px 18px;">
+                <Label fx:id="statusLabel" text="🟢 Connected to server" styleClass="stat-label" style="-fx-font-size: 11px;"/>
+                <ProgressBar fx:id="progressBar" prefWidth="200.0" visible="false"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="syncVersionLabel" text="Sync Version: v1" style="-fx-text-fill: #8f92a1; -fx-font-size: 11px;"/>
             </HBox>
         </VBox>
     </top>
@@ -31,14 +47,24 @@
     <center>
         <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE">
             <tabs>
-                <Tab fx:id="eventsTab" text="Events">
+                <!-- Events & Trading Tab -->
+                <Tab fx:id="eventsTab" text="📊 Events &amp; Trading">
                     <content>
                         <fx:include fx:id="eventsTabView" source="events_tab.fxml"/>
                     </content>
                 </Tab>
-                <Tab fx:id="usersTab" text="Users">
+
+                <!-- User Profile & Other Users Tab -->
+                <Tab fx:id="usersTab" text="👤 Users &amp; Portfolios">
                     <content>
                         <fx:include fx:id="usersTabView" source="users_tab.fxml"/>
+                    </content>
+                </Tab>
+
+                <!-- Chat Room Tab (Bonus) -->
+                <Tab fx:id="chatTab" text="💬 Chat Room (Bonus)">
+                    <content>
+                        <fx:include fx:id="chatTabView" source="chat_tab.fxml"/>
                     </content>
                 </Tab>
             </tabs>

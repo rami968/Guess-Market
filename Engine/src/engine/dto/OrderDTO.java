@@ -1,9 +1,11 @@
 package engine.dto;
 
+import java.io.Serializable;
+
 /**
  * Data Transfer Object representing an order in the Order Book for UI tables.
  */
-public class OrderDTO {
+public class OrderDTO implements Serializable {
     private final int id;
     private final String userName;
     private final String optionName;

@@ -19,3 +19,7 @@ Rami_Zargian_*
 # Root temporary JARs
 Engine.jar
 UI.jar
+
+# Temporary build scripts and artifacts
+__pycache__/
+sources.txt

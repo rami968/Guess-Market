@@ -1,11 +1,11 @@
 package engine.dto;
 
-import engine.model.EventStatus;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
 // Immutable DTO holding full trading status and history of an event.
-public class EventTradingStatusDTO {
+public class EventTradingStatusDTO implements Serializable {
     private final int eventId;
     private final String eventName;
     private final EventStatus status;
@@ -39,62 +39,21 @@ public class EventTradingStatusDTO {
         this.totalCommissionCollected = totalCommissionCollected;
         this.winningOptionIndex = winningOptionIndex;
         this.winningOptionName = winningOptionName;
-        this.transactionHistory = Collections.unmodifiableList(transactionHistory);
+        this.transactionHistory = (transactionHistory != null) ? Collections.unmodifiableList(transactionHistory) : Collections.emptyList();
     }
 
-    public int getEventId() {
-        return eventId;
-    }
-
-    public String getEventName() {
-        return eventName;
-    }
-
-    public EventStatus getStatus() {
-        return status;
-    }
-
-    public String getOption1() {
-        return option1;
-    }
-
-    public String getOption2() {
-        return option2;
-    }
-
-    public double getProb1() {
-        return prob1;
-    }
-
-    public double getProb2() {
-        return prob2;
-    }
-
-    public int getQ1() {
-        return q1;
-    }
-
-    public int getQ2() {
-        return q2;
-    }
-
-    public double getEventAccountBalance() {
-        return eventAccountBalance;
-    }
-
-    public double getTotalCommissionCollected() {
-        return totalCommissionCollected;
-    }
-
-    public int getWinningOptionIndex() {
-        return winningOptionIndex;
-    }
-
-    public String getWinningOptionName() {
-        return winningOptionName;
-    }
-
-    public List<TransactionDTO> getTransactionHistory() {
-        return transactionHistory;
-    }
+    public int getEventId() { return eventId; }
+    public String getEventName() { return eventName; }
+    public EventStatus getStatus() { return status; }
+    public String getOption1() { return option1; }
+    public String getOption2() { return option2; }
+    public double getProb1() { return prob1; }
+    public double getProb2() { return prob2; }
+    public int getQ1() { return q1; }
+    public int getQ2() { return q2; }
+    public double getEventAccountBalance() { return eventAccountBalance; }
+    public double getTotalCommissionCollected() { return totalCommissionCollected; }
+    public int getWinningOptionIndex() { return winningOptionIndex; }
+    public String getWinningOptionName() { return winningOptionName; }
+    public List<TransactionDTO> getTransactionHistory() { return transactionHistory; }
 }
