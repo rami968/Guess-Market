@@ -157,8 +157,27 @@ def main():
     zip_directory_contents("out/production/Engine", os.path.join(client_dir, "Engine.jar"))
 
     # 3. Copy runtime lib folder to Client/lib
+    # Only copy what the JavaFX client actually needs at runtime:
+    #   - javafx-sdk/ (the .jar files only, from lib/javafx-sdk/lib/*.jar)
+    #   - gson.jar, jaxb JARs, angus JARs (for Engine's XML parsing)
+    # We do NOT copy servlet-api.jar (server-only) or the source-only folders
     target_lib = os.path.join(client_dir, "lib")
-    shutil.copytree("lib", target_lib, dirs_exist_ok=True)
+    javafx_dst = os.path.join(target_lib, "javafx-sdk", "lib")
+    os.makedirs(javafx_dst, exist_ok=True)
+    # Copy JavaFX SDK JARs only (from lib/javafx-sdk/lib/*.jar)
+    javafx_src_lib = os.path.join("lib", "javafx-sdk", "lib")
+    for fname in os.listdir(javafx_src_lib):
+        if fname.endswith(".jar"):
+            shutil.copy2(os.path.join(javafx_src_lib, fname), os.path.join(javafx_dst, fname))
+    # Also copy the native .dll files if present (needed for JavaFX graphics on Windows)
+    for fname in os.listdir(javafx_src_lib):
+        if fname.endswith(".dll") or fname.endswith(".dylib") or fname.endswith(".so"):
+            shutil.copy2(os.path.join(javafx_src_lib, fname), os.path.join(javafx_dst, fname))
+    # Copy required runtime JARs (everything except servlet-api.jar which is server-only)
+    skip_jars = {"servlet-api.jar"}
+    for fname in os.listdir("lib"):
+        if fname.endswith(".jar") and fname not in skip_jars:
+            shutil.copy2(os.path.join("lib", fname), os.path.join(target_lib, fname))
 
     # 4. Create standalone run.bat into Client/
     client_bat = os.path.join(client_dir, "run.bat")
