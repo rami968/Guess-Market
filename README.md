@@ -171,18 +171,7 @@ Guess Market/
 
 ---
 
-## 📦 Final Submission Package Structure (`Rami_Zargian_324081231_EX3.zip`)
 
-```
-Rami_Zargian_324081231_EX3.zip
-├── guess_market.war        # Complete deployable WAR with bundled dependencies
-├── README.docx             # Comprehensive Word document with class documentation
-└── Client/                 # Standalone client directory
-    ├── Engine.jar          # Compiled core engine
-    ├── UI.jar              # Compiled JavaFX GUI client
-    ├── lib/                # JavaFX SDK and runtime dependencies
-    └── run.bat             # Standalone client launcher batch script
-```
 
 ---
 
