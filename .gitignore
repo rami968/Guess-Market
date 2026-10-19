@@ -13,8 +13,16 @@ temp_*
 Rami_Zargian_*
 
 # IDE files
-.idea/
+.idea/*
+!.idea/modules.xml
+!.idea/vcs.xml
+!.idea/misc.xml
+!.idea/libraries/
 *.iml
+!Engine/Engine.iml
+!Guess Market.iml
+!Server/Server.iml
+!UI/UI.iml
 
 # Root temporary JARs
 Engine.jar

@@ -134,7 +134,18 @@ def main():
     submission_root = "Rami_Zargian_324081231_EX3"
     client_dir = os.path.join(submission_root, "Client")
     if os.path.exists(submission_root):
-        shutil.rmtree(submission_root)
+        for root, dirs, files in os.walk(submission_root, topdown=False):
+            for file in files:
+                if not file.startswith("~$") and not file.endswith(".docx"):
+                    try:
+                        os.remove(os.path.join(root, file))
+                    except Exception:
+                        pass
+            for d in dirs:
+                try:
+                    os.rmdir(os.path.join(root, d))
+                except Exception:
+                    pass
     os.makedirs(client_dir, exist_ok=True)
 
     # 1. Copy WAR to root of submission
@@ -160,8 +171,11 @@ def main():
 
     # 5. Generate README.docx
     readme_path = os.path.join(submission_root, "README.docx")
-    generate_readme(readme_path)
-    shutil.copy2(readme_path, "README.docx")
+    try:
+        generate_readme(readme_path)
+        shutil.copy2(readme_path, "README.docx")
+    except (PermissionError, OSError) as e:
+        print(f"Note: README.docx is currently open in Word ({e}). Packaging existing docx into zip.")
 
     # 6. Create final ZIP
     zip_name = "Rami_Zargian_324081231_EX3.zip"
