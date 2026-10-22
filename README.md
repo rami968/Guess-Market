@@ -6,7 +6,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-Distributed%20Client--Server-brightgreen.svg)]()
 
 > **Final Capstone Project**  
-> Developed and submitted by: **Rami Zargian** (ID: `324081231`)  
+> Developed and submitted by: **Rami Zargian**  
 > GitHub Repository: [https://github.com/rami968/Guess-Market](https://github.com/rami968/Guess-Market)
 
 ---
@@ -25,7 +25,7 @@ Developed across three progressive milestones, Guess Market evolved from an init
 
 ## 🌟 The Evolution of Guess Market
 
-### 🔹 Milestone 1 (Exercise 1) — Core Mathematical Engine & XML Validation
+### 🔹 Milestone 1 — Core Mathematical Engine & XML Validation
 * **LMSR Math Engine**: Pure mathematical implementation of Robin Hanson's market scoring rule:
   $$C(q_1, q_2) = b \cdot \ln\left(e^{q_1/b} + e^{q_2/b}\right)$$
 * **Dynamic Pricing & Probabilities**: Automated marginal cost calculations and instantaneous probabilities:
@@ -33,7 +33,7 @@ Developed across three progressive milestones, Guess Market evolved from an init
 * **XML v1 Schema Validation**: JAXB unmarshalling with strict semantic validation: verifying non-negative liquidity subsidies ($b > 0$), probability sanity, and uniqueness constraints.
 * **Console Interface**: Interactive CLI for inspecting events and testing purchases.
 
-### 🔹 Milestone 2 (Exercise 2) — JavaFX Graphical UI, Order Book & Multi-User Portfolios
+### 🔹 Milestone 2 — JavaFX Graphical UI, Order Book & Multi-User Portfolios
 * **Modern JavaFX GUI**: Rich, responsive dark-mode interface structured with FXML and custom CSS.
 * **Order Book Matching Engine**:
   * Continuous limit order trading (BUY and SELL).
@@ -44,7 +44,7 @@ Developed across three progressive milestones, Guess Market evolved from an init
 * **Market Maker (MM) Lifecycle**: Event lifecycle management (`INACTIVE` $\rightarrow$ `ACTIVE` $\rightarrow$ `CLOSED`), initial liquidity funding, and fee collection.
 * **Dynamic Filtering**: Real-time filtering by Event Type (LMSR/OB), Status (Inactive/Active/Closed), and Fee Scheme (On-Purchase/On-Close).
 
-### 🔹 Milestone 3 (Exercise 3 — Final Capstone) — Distributed Client-Server Architecture
+### 🔹 Milestone 3 — Distributed Client-Server Architecture
 * **Tomcat 10.1 / Jakarta EE Server**:
   * Transitions from desktop architecture into a distributed multi-tier Client-Server platform deployed as a single WAR (`guess_market.war`).
   * Pure **In-Memory Server State**: To strictly accommodate examiner file-permission constraints, XML files are parsed on-the-fly directly from request input streams without writing temporary files to disk. All state resides in memory and resets cleanly on server restart.
@@ -175,7 +175,6 @@ Guess Market/
 ---
 
 ## 👤 Author
-**Rami Zargian**  
-ID: `324081231`  
+**Rami Zargian**    
 Email: [ramizargian@gmail.com](mailto:ramizargian@gmail.com)  
 GitHub: [https://github.com/rami968/Guess-Market](https://github.com/rami968/Guess-Market)
